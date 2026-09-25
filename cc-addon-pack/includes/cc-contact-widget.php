@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 class CC_FooterContact_Widget extends WP_Widget{
     function __construct() {
         parent::__construct(
@@ -11,13 +13,13 @@ class CC_FooterContact_Widget extends WP_Widget{
     public function widget( $args, $instance ) {
         $options = ccAddonPack_get_option();
 
-        echo $args['before_widget'];
+        echo wp_kses_post( $args['before_widget'] );
 
         echo PHP_EOL.'<div class="headline"><h2>';
         if ( isset( $instance['label'] ) && $instance['label'] ) {
-            echo $instance['label'];
+            echo esc_html( $instance['label'] );
         } else {
-            _e( 'Contact Us', 'cc-addon-pack' );
+            esc_html_e( 'Contact Us', 'cc-addon-pack' );
         }
         echo '</h2></div>'.PHP_EOL;
 
@@ -34,12 +36,12 @@ class CC_FooterContact_Widget extends WP_Widget{
         }
         if ( !empty($options['contact_email']) ) {
             $mail = antispambot($options['contact_email']);
-            echo 'Email: ' . '<a href="' . esc_url('mailto:'.$mail) . '">' . $mail . '</a><br />'.PHP_EOL;
+            echo 'Email: ' . '<a href="' . esc_url('mailto:'.$mail) . '">' . esc_html( $mail ) . '</a><br />'.PHP_EOL;
         }
 
         echo '</address>'.PHP_EOL;
 
-        echo $args['after_widget'];
+        echo wp_kses_post( $args['after_widget'] );
 
     }
 
@@ -51,12 +53,12 @@ class CC_FooterContact_Widget extends WP_Widget{
         ?>
 
         <br/>
-        <label for="<?php echo $this->get_field_id( 'label' );  ?>"><?php _e( 'Title:' ); ?></label><br/>
-        <input type="text" id="<?php echo $this->get_field_id( 'label' ); ?>-title" name="<?php echo $this->get_field_name( 'label' ); ?>" value="<?php echo $instance['label']; ?>" />
+        <label for="<?php echo esc_attr( $this->get_field_id( 'label' ) ); ?>"><?php esc_html_e( 'Title:', 'cc-addon-pack' ); ?></label><br/>
+        <input type="text" id="<?php echo esc_attr( $this->get_field_id( 'label' ) ); ?>-title" name="<?php echo esc_attr( $this->get_field_name( 'label' ) ); ?>" value="<?php echo esc_attr( $instance['label'] ); ?>" />
         <br/><br />
         <?php
         echo '<div style="padding:1em 0;">';
-        _e( '*It is necessary to set the "Contact Information" section in "Saitama Addon Pack" page.', 'cc-addon-pack' );
+        esc_html_e( '*It is necessary to set the "Contact Information" section in "Saitama Addon Pack" page.', 'cc-addon-pack' );
         echo '</div>';
         return $instance;
     }
@@ -64,7 +66,7 @@ class CC_FooterContact_Widget extends WP_Widget{
 
     function update($new_instance, $old_instance) {
         $instance = $old_instance;
-        $instance['label']      = $new_instance['label'];
+        $instance['label']      = sanitize_text_field( $new_instance['label'] );
         return $instance;
     }
 

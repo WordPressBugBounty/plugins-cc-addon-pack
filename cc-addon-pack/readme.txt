@@ -1,10 +1,10 @@
-=== Plugin Name ===
+=== Saitama Addon Pack ===
 Contributors: Communitycom
 Donate link:
-Tags: New posts, Default Thumbnail, Disable Emoji, Google Analytics, sns, Facebook Page Plugin, OG tags
-Requires at least: 4.4
-Tested up to: 6.3.1
-Stable tag: 1.0.8
+Tags: google-analytics, seo, widgets, facebook, og-tags
+Requires at least: 4.7
+Tested up to: 7.1
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,16 @@ e.g.
 
 == Changelog ==
 
+= 1.0.9 =
+* Security fix: escape Meta Keywords / Meta Description values in the post-editor metaboxes (esc_attr/esc_textarea) to prevent a Contributor+ stored XSS. Sanitize input on save (sanitize_text_field/sanitize_textarea_field). Credit: security researcher testoun.
+* Escape all remaining dynamic output across widgets, admin settings screen, and front-end meta/OG tags (esc_html/esc_attr/esc_url).
+* Add missing text-domain arguments and translator comments for translation strings.
+* Add direct-file-access protection to all PHP files.
+* Bundle Bootstrap and Font Awesome locally instead of loading them from a third-party CDN.
+* Register the Google Analytics script properly via wp_enqueue_script()/wp_add_inline_script() instead of printing a raw <script> tag.
+* Replace discouraged functions (strip_tags(), wp_reset_query()) with their recommended equivalents.
+* Prefix global variable names, and other WordPress Plugin Check / coding-standards cleanup.
+
 = 1.0.8 =
 * Change Google Analitics version
 
@@ -81,4 +91,5 @@ e.g.
 
 == Upgrade Notice ==
 
-Nothing.
+= 1.0.9 =
+Security fix: patches a stored XSS vulnerability in the Meta Keywords / Meta Description post metaboxes, plus a broader security/coding-standards cleanup. Update immediately.

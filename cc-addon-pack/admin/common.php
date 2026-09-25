@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 function ccAddonPack_options_register() {
 	register_setting( 'ccAddonPack_options_fields', 'ccAddonPack_options', 'ccAddonPack_options_sanitize' );
 }

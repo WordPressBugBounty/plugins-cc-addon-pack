@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /**
  * Disabled Emoji
  */
@@ -50,23 +52,24 @@ add_filter( 'post_thumbnail_html', 'ccAddonPack_default_thumbnail_image', 10, 5 
  * Output Google Analytics Tag
  */
 function ccAddonPack_set_ga_tag() {
-    $options = ccAddonPack_get_option();
+	$options = ccAddonPack_get_option();
 
-	if ( !empty($options['gaId']) ) :
-?>
-<!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-<?php echo $options['gaId']; ?>"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-<?php echo $options['gaId']; ?>');
-</script>
-<!-- End Google Analytics 4 -->
-<?php
-	endif;
+	if ( empty( $options['gaId'] ) ) {
+		return;
+	}
+
+	global $ccAddonPack_version;
+	$ga_id = sanitize_text_field( $options['gaId'] );
+
+	wp_enqueue_script( 'ccAddonPack-ga4', 'https://www.googletagmanager.com/gtag/js?id=G-' . rawurlencode( $ga_id ), array(), $ccAddonPack_version, true );
+
+	$inline_script = "window.dataLayer = window.dataLayer || [];\n"
+		. "function gtag(){dataLayer.push(arguments);}\n"
+		. "gtag('js', new Date());\n"
+		. "gtag('config', 'G-" . esc_js( $ga_id ) . "');";
+	wp_add_inline_script( 'ccAddonPack-ga4', $inline_script );
 }
-add_action( 'wp_head', 'ccAddonPack_set_ga_tag' );
+add_action( 'wp_enqueue_scripts', 'ccAddonPack_set_ga_tag' );
 
 /**
  * Add Meta Keyword Field
@@ -92,25 +95,25 @@ add_action( 'admin_menu', 'ccAddonPack_add_meta_keyword_field' );
  */
 function ccAddonPack_insert_metaKeyword() {
   global $post;
-  echo '<input type="hidden" name="noncename_custom_field_metaKey" id="noncename_custom_field_metaKey" value="'.wp_create_nonce(plugin_basename(__FILE__)).'" />';
-  echo '<label class="hidden" for="ccAddonPack_metaKeyword">'.__('Meta Keywords', 'cc-addon-pack').'</label><input type="text" name="ccAddonPack_metaKeyword" size="50" value="'.get_post_meta($post->ID, 'ccAddonPack_metaKeyword', true).'" />';
-  echo '<p>'.__('To distinguish between individual keywords, please enter a , delimiter (optional).', 'cc-addon-pack').'</p>';
+  echo '<input type="hidden" name="noncename_custom_field_metaKey" id="noncename_custom_field_metaKey" value="'.esc_attr( wp_create_nonce(plugin_basename(__FILE__)) ).'" />';
+  echo '<label class="hidden" for="ccAddonPack_metaKeyword">'.esc_html__('Meta Keywords', 'cc-addon-pack').'</label><input type="text" name="ccAddonPack_metaKeyword" size="50" value="'.esc_attr( get_post_meta($post->ID, 'ccAddonPack_metaKeyword', true) ).'" />';
+  echo '<p>'.esc_html__('To distinguish between individual keywords, please enter a , delimiter (optional).', 'cc-addon-pack').'</p>';
 }
 
 function ccAddonPack_save_meta_keyword( $post_id ) {
-	$metaKeyword = isset( $_POST['noncename_custom_field_metaKey'] ) ? htmlspecialchars( $_POST['noncename_custom_field_metaKey'] ) : null;
+	$metaKeyword = isset( $_POST['noncename_custom_field_metaKey'] ) ? sanitize_text_field( wp_unslash( $_POST['noncename_custom_field_metaKey'] ) ) : null;
 
 	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return $post_id;
 
 	if ( ! wp_verify_nonce( $metaKeyword, plugin_basename( __FILE__ ) ) ) return $post_id;
 
-	if ( 'page' == $_POST['ccAddonPack_metaKeyword'] ) {
+	if ( isset( $_POST['post_type'] ) && 'page' === $_POST['post_type'] ) {
 		if ( ! current_user_can( 'edit_page', $post_id ) ) { return $post_id; }
 	} else {
 		if ( ! current_user_can( 'edit_post', $post_id ) ) { return $post_id; }
 	}
 
-	$data = $_POST['ccAddonPack_metaKeyword'];
+	$data = isset( $_POST['ccAddonPack_metaKeyword'] ) ? sanitize_text_field( wp_unslash( $_POST['ccAddonPack_metaKeyword'] ) ) : '';
 
 	if ( get_post_meta( $post_id, 'ccAddonPack_metaKeyword' ) == '' ) {
 		add_post_meta( $post_id, 'ccAddonPack_metaKeyword', $data, true );
@@ -146,24 +149,24 @@ add_action( 'admin_menu', 'ccAddonPack_add_meta_description_field' );
  */
 function ccAddonPack_insert_metaDesc() {
   global $post;
-  echo '<input type="hidden" name="noncename_custom_field_metaDesc" id="noncename_custom_field_metaDesc" value="'.wp_create_nonce(plugin_basename(__FILE__)).'" />';
-  echo '<label class="hidden" for="ccAddonPack_metaDescription">'.__('Meta Description', 'cc-addon-pack').'</label><textarea cols="80" rows="3" name="ccAddonPack_metaDescription">'.get_post_meta($post->ID, 'ccAddonPack_metaDescription', true).'</textarea>';
+  echo '<input type="hidden" name="noncename_custom_field_metaDesc" id="noncename_custom_field_metaDesc" value="'.esc_attr( wp_create_nonce(plugin_basename(__FILE__)) ).'" />';
+  echo '<label class="hidden" for="ccAddonPack_metaDescription">'.esc_html__('Meta Description', 'cc-addon-pack').'</label><textarea cols="80" rows="3" name="ccAddonPack_metaDescription">'.esc_textarea( get_post_meta($post->ID, 'ccAddonPack_metaDescription', true) ).'</textarea>';
 }
 
 function ccAddonPack_save_meta_description( $post_id ) {
-	$metaDescription = isset( $_POST['noncename_custom_field_metaDesc'] ) ? htmlspecialchars( $_POST['noncename_custom_field_metaDesc'] ) : null;
+	$metaDescription = isset( $_POST['noncename_custom_field_metaDesc'] ) ? sanitize_text_field( wp_unslash( $_POST['noncename_custom_field_metaDesc'] ) ) : null;
 
 	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return $post_id;
 
 	if ( ! wp_verify_nonce( $metaDescription, plugin_basename( __FILE__ ) ) ) return $post_id;
 
-	if ( 'page' == $_POST['ccAddonPack_metaDescription'] ) {
+	if ( isset( $_POST['post_type'] ) && 'page' === $_POST['post_type'] ) {
 		if ( ! current_user_can( 'edit_page', $post_id ) ) { return $post_id; }
 	} else {
 		if ( ! current_user_can( 'edit_post', $post_id ) ) { return $post_id; }
 	}
 
-	$data = $_POST['ccAddonPack_metaDescription'];
+	$data = isset( $_POST['ccAddonPack_metaDescription'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ccAddonPack_metaDescription'] ) ) : '';
 
 	if ( get_post_meta( $post_id, 'ccAddonPack_metaDescription' ) == '' ) {
 		add_post_meta( $post_id, 'ccAddonPack_metaDescription', $data, true );
@@ -238,10 +241,10 @@ function ccAddonPack_set_fb() {
 	$link = ( is_home() || is_front_page() ) ? home_url() : get_permalink();
 	$desc = ccAddonPack_rtn_description();
 
-	echo '<meta property="og:site_name" content="'.get_bloginfo( 'name' ).'" />'."\n";
-	echo '<meta property="og:url" content="'.$link.'" />'."\n";
-	echo '<meta property="og:title" content="'.$title.'" />'."\n";
-	echo '<meta property="og:description" content="'.$desc.'" />'."\n";
+	echo '<meta property="og:site_name" content="'.esc_attr( get_bloginfo( 'name' ) ).'" />'."\n";
+	echo '<meta property="og:url" content="'.esc_url( $link ).'" />'."\n";
+	echo '<meta property="og:title" content="'.esc_attr( $title ).'" />'."\n";
+	echo '<meta property="og:description" content="'.esc_attr( $desc ).'" />'."\n";
 
 	if ( is_home() || is_front_page() ) {
 		echo '<meta property="og:type" content="website" />'."\n";
@@ -256,7 +259,7 @@ function ccAddonPack_set_fb() {
 		if ( has_post_thumbnail() ) {
 			$img_id = get_post_thumbnail_id();
 			$img_url = wp_get_attachment_image_src( $img_id,'large', true );
-			echo '<meta property="og:image" content="'.$img_url[0].'" />'."\n";
+			echo '<meta property="og:image" content="'.esc_url( $img_url[0] ).'" />'."\n";
 
 		} elseif ( isset( $options['ogimg'] ) && $options['ogimg'] ) {
 			echo '<meta property="og:image" content="'.esc_url($options['ogimg']).'" />'."\n";
@@ -289,7 +292,7 @@ function ccAddonPack_rtn_description() {
 	$desc = '';
 
 	if ( is_page() || is_single() ) {
-		$desc = ($post->post_excerpt) ? $post->post_excerpt : mb_substr( strip_tags( $post->post_content ), 0, 240 );
+		$desc = ($post->post_excerpt) ? $post->post_excerpt : mb_substr( wp_strip_all_tags( $post->post_content ), 0, 240 );
 	} else {
 		$desc = get_bloginfo( 'description' );
 	}

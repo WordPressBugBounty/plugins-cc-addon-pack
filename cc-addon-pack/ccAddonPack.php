@@ -1,19 +1,19 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /*
 Plugin Name: Saitama Addon Pack
 Description: This plug-in is an integrated plug-in with a variety of features that make it powerful your web site for Saitama Theme. Example Print OG Tags,Print Twitter Card Tags,Print Google Analytics tag and more!
-Version: 1.0.8
+Version: 1.0.9
+Requires at least: 4.7
 Author: Communitycom
 Author URI: http://www.communitycom.jp/
 License: GPL2
-Tested up to: 6.3.1
+Tested up to: 7.1
 Requires PHP: 7.4
 */
-$data = get_file_data( __FILE__, array( 'version' => 'Version' ) );
+$ccAddonPack_data = get_file_data( __FILE__, array( 'version' => 'Version' ) );
 global $ccAddonPack_version;
-$ccAddonPack_version = $data['version'];
-
-load_plugin_textdomain( 'cc-addon-pack', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+$ccAddonPack_version = $ccAddonPack_data['version'];
 
 function ccAddonPack_get_directory( $path = '' ) {
 	return dirname( __FILE__ ) . $path;
@@ -51,10 +51,10 @@ add_action( 'admin_menu', 'ccAddonPack_add_menu' );
 function ccAddonPack_admin_print_scripts() {
 	global $ccAddonPack_version;
 
-	wp_enqueue_style( 'ccAddonPack-admin-bootstrap-style', 'https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css', array(), $ccAddonPack_version );
+	wp_enqueue_style( 'ccAddonPack-admin-bootstrap-style', ccAddonPack_get_directory_uri('/vendor/bootstrap/css/bootstrap.min.css'), array(), $ccAddonPack_version );
 	wp_enqueue_style( 'ccAddonPack-common-style', ccAddonPack_get_directory_uri('/css/common.css'), array(), $ccAddonPack_version );
 
-	wp_enqueue_script( 'ccAddonPack-admin-bootstrap-js', 'https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js', array( 'jquery' ), $ccAddonPack_version, true );
+	wp_enqueue_script( 'ccAddonPack-admin-bootstrap-js', ccAddonPack_get_directory_uri('/vendor/bootstrap/js/bootstrap.min.js'), array( 'jquery' ), $ccAddonPack_version, true );
 
 	if ( function_exists( 'wp_enqueue_media' ) ) {
 		wp_enqueue_media();
@@ -71,10 +71,10 @@ function ccAddonPack_print_css() {
 	$options = ccAddonPack_get_option();
 
 	if ( isset( $options['active_bootstrap'] ) && $options['active_bootstrap'] ) {
-		wp_enqueue_style( 'ccAddonPack-bootstrap-style', 'https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css', array(), $ccAddonPack_version );
+		wp_enqueue_style( 'ccAddonPack-bootstrap-style', ccAddonPack_get_directory_uri('/vendor/bootstrap/css/bootstrap.min.css'), array(), $ccAddonPack_version );
 	}
 	if ( isset( $options['active_fontawesome'] ) && $options['active_fontawesome'] ) {
-		wp_enqueue_style( 'font-awesome', 'https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', array(), $ccAddonPack_version );
+		wp_enqueue_style( 'font-awesome', ccAddonPack_get_directory_uri('/vendor/font-awesome/css/font-awesome.min.css'), array(), $ccAddonPack_version );
 	}
 }
 add_action( 'wp_enqueue_scripts','ccAddonPack_print_css' );
